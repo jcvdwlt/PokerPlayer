@@ -25,8 +25,11 @@ def plot_outcomes(outcomes, ax):
     ax.set_ylabel('Cumulative outcome', fontsize=14)
 
 
-outcomes = np.load('mlp_rb_rand_outcomes.npy')
+# outcomes = np.load('mlp_rb_rand_outcomes.npy')
+outcomes = np.load('outcomes.npy')
+
 f, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 10))
 plot_outcomes(outcomes, ax)
-ax.legend(['MLP value function', 'Probability rule based', 'Random play'], fontsize=14)
+ax.legend(['RL Value Function', 'Rational', 'Random'], fontsize=14)
+plt.savefig('outcomes.png')
 plt.show()

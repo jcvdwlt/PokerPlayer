@@ -1,5 +1,6 @@
 import copy
 from joblib import dump, load
+import abc
 
 import numpy as np
 from collections import Counter
@@ -390,6 +391,11 @@ class Player:
 
         self.learn = learn
 
+        self.state_history = np.zeros(shape=[0, EVAL_VEC_LEN-1])
+
+    def update_state_history(self, state):
+        self.state_history = np.vstack([self.state_history, state])
+
     def set_hand(self, hand):
         print(self.name)
         print_cards(hand)
@@ -475,16 +481,20 @@ class Player:
 
         self.current_state = self.get_state(table, rnd)
         self.update_value_function()
+        self.update_state_history(self.current_state)
 
         self.policy.print_action_values()
 
     def update_value_function(self):
-        if self.learn:
+        if self.learn == 'incremental':
             nv = self.policy.value_function.get_value(self.current_state)
             self.policy.update_value_function(self.previous_state, nv)
 
     def final_update(self):
-        self.policy.update_value_function(self.current_state, np.array([self.outcome]))
+        if self.learn == 'incremental':
+            self.policy.update_value_function(self.current_state, np.array([self.outcome]))
+        elif self.learn == 'at_t':
+            self.policy.update_value_function(self.state_history, np.ones(self.state_history.shape[0]) * self.outcome)
 
     def print_hand(self):
         print(self.name)
@@ -495,7 +505,28 @@ class Player:
         print(self.name + ' has ' + print_outcome(v))
 
 
-class BlindPolicy:
+class BasePolicy(abc.ABC):
+
+    def choose_action(self, player, table, rnd, max_bet):
+        pass
+
+    def update_value_function(self, state, value):
+        pass
+
+    def print_action_values(self):
+        pass
+
+
+class RandomPolicy(BasePolicy):
+
+    def choose_action(self, player, table, rnd, max_bet):
+        if player.acted:
+            return np.random.choice(np.array([0, 1]))
+        else:
+            return np.random.choice(np.array([0, 1, 2]))
+
+
+class RationalPolicy:
     def __init__(self, random=False):
         self.lookup = load('3_player_best_hand_dict.joblib')
         self.prob_best_hand = None
@@ -559,20 +590,23 @@ class Policy:
         self.pv0 = self.possible_values(player, table, rnd, max_bet)
 
         self.pv = self.pv0 / (max(self.pv0) - min(self.pv0))  # make the range from 0 to 1 (roughly)
+        rnd = np.random.uniform()
+
         if min(self.pv) < 0:
             self.pv = self.pv - np.min(self.pv) + 0.2
         self.pv = self.pv / sum(self.pv)
 
         if self.greedy:
-            return np.argmax(self.pv == max(self.pv))
-        elif self.random:
-            if player.acted:
-                return np.random.choice(np.array([0, 1]))
+            if rnd > self.greedy:
+                return np.argmax(self.pv == max(self.pv))
             else:
-                return np.random.choice(np.array([0, 1, 2]))
+                if player.acted:
+                    return np.random.choice(np.array([0, 1]))
+                else:
+                    return np.random.choice(np.array([0, 1, 2]))
+
         else:
             p = 0
-            rnd = np.random.uniform()
 
             for i in range(len(self.pv)):
                 p += self.pv[i]
@@ -596,24 +630,18 @@ class Policy:
 class MLPValueFunction:
     def __init__(self, file_name, hidden_layers=(100,)):
         self.estimator = MLPRegressor(hidden_layers)
-        # TODO: the initialization is a little tricky, need some start data to train on.
-        # self.estimator.coefs_ = [np.random.normal(size=(27, 100)), np.random.normal(size=(100, 1))]
-        # self.estimator.intercepts_ = [np.random.normal(size=(100,)), np.random.normal(size=(1,))]
 
-        rnd = np.random.normal(size=[3, EVAL_VEC_LEN])
-        self.estimator.fit(X=rnd[:, :-1], y=rnd[:, -1])
+        self.init_X = np.load('init_mlp.npy')
+        self.init_y = np.ones(self.init_X.shape[0]) * 30  # initialize to encourage exploration
+        self.estimator.fit(self.init_X, self.init_y)
+
         self.filename = file_name
 
     def update(self, X, y):
         self.estimator.partial_fit(X, y)
 
     def get_value(self, X):
-        out = self.estimator.predict(X)
-        if np.isnan(out):
-            print('nan out!')
-            print(X)
-
-        return out
+        return self.estimator.predict(X)
 
     def save_model(self):
         dump(self.estimator, self.filename)
