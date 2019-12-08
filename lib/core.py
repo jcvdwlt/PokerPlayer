@@ -6,7 +6,7 @@ import numpy as np
 from collections import Counter
 from sklearn.neural_network import MLPRegressor
 
-from const import print_cards, print_outcome, ACTIONS, Actions
+from lib.const import print_cards, print_outcome, ACTIONS, Actions
 
 
 BIG_BLIND = 4

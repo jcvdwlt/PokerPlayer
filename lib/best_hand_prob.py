@@ -1,8 +1,8 @@
 from joblib import dump
 from collections import defaultdict, Counter
 
-from core import Evaluate, Deck, Winner
-from const import HANDS
+from lib.core import Evaluate, Deck, Winner
+from lib.const import HANDS
 
 
 def get_flop_river_turn_r(hand, table):

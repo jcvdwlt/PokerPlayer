@@ -1,4 +1,4 @@
-from core import Player, Game, Policy, MLPValueFunction, RationalPolicy, RandomPolicy
+from lib.core import Player, Game, Policy, MLPValueFunction, RationalPolicy, RandomPolicy
 import numpy as np
 import matplotlib.pyplot as plt
 
