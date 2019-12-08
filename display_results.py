@@ -26,7 +26,7 @@ def plot_outcomes(outcomes, ax):
 
 
 # outcomes = np.load('mlp_rb_rand_outcomes.npy')
-outcomes = np.load('outcomes.npy')
+outcomes = np.load('dumps/outcomes.npy')
 
 f, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 10))
 plot_outcomes(outcomes, ax)

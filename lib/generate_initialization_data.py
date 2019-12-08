@@ -17,5 +17,5 @@ for _ in range(runs):
     state_histories = np.vstack([state_histories, p1.state_history, p2.state_history, p3.state_history])
 
 
-np.save('init_mlp.npy', state_histories)
+np.save('dumps/init_mlp.npy', state_histories)
 

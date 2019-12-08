@@ -9,7 +9,7 @@ N_PLAYERS = 3
 outcomes = np.zeros(shape=[N_GAMES, N_PLAYERS, N_RUNS])
 
 for run in range(N_RUNS):
-    vf1 = MLPValueFunction(file_name='p1.joblib')
+    vf1 = MLPValueFunction(file_name='dumps/p1.joblib')
 
     for seed in range(N_GAMES):
         # np.random.seed(seed)
@@ -30,7 +30,7 @@ for run in range(N_RUNS):
 print(outcomes.sum(axis=0))
 
 vf1.save_model()
-np.save('outcomes.npy', outcomes)
+np.save('dumps/outcomes.npy', outcomes)
 
 
 # TODO: make interface to play with human

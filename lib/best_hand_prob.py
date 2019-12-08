@@ -55,7 +55,7 @@ print('{0:20} {1:>10} {2:>10} {3:>10}  {4:>10}'.format('HANDS', 'pre-flop', 'flo
 for i in range(1,10):
     print('{0:20} {1:10.3f} {2:10.3f} {3:10.3f} {4:10.3f}'.format(HANDS[i], wd[i][0], wd[i][1], wd[i][2], wd[i][3]))
 
-dump(wd, '3_player_best_hand_dict.joblib')
+dump(wd, 'dumps/3_player_best_hand_dict.joblib')
 
 
 
